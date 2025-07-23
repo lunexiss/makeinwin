@@ -245,25 +245,41 @@ void clean() {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("make [all|clean|<target>]\n");
-        return 1;
+    const char *target_name = NULL;
+    
+    // parse shi
+    int makefile_exists = parse_makefile();
+    
+    if (argc >= 2) {
+        target_name = argv[1];
+    } else {
+        if (makefile_exists && target_count > 0) {
+            // defaulting shit :3
+            target_name = targets[0].name;
+            printf("no target found, defaulting to '%s'\n", target_name);
+        } else if (makefile_exists) {
+            fprintf(stderr, "no targets found in Makefile.\n");
+            return 1;
+        } else {
+            target_name = "all";
+            printf("no Makefile found, defaulting to 'all'\n");
+        }
     }
 
-    if (!parse_makefile()) {
+    if (!makefile_exists) {
         printf("no Makefile found falling back to builtin.\n");
 
-        if (strcmp(argv[1], "all") == 0) {
+        if (strcmp(target_name, "all") == 0) {
             build();
-        } else if (strcmp(argv[1], "clean") == 0) {
+        } else if (strcmp(target_name, "clean") == 0) {
             clean();
         } else {
-            printf("unknown target: %s\n", argv[1]);
+            printf("unknown target: %s\n", target_name);
             return 1;
         }
 
         return 0;
     }
 
-    return run_target(argv[1]);
+    return run_target(target_name);
 }
