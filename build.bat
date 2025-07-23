@@ -1,0 +1,1 @@
+gcc makeinwin.c -o make.exe
